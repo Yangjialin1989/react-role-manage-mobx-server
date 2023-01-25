@@ -1,4 +1,5 @@
 var mongoose = require('mongoose')
+const grids = require("./grids");
 var Schema = mongoose.Schema
 var HeaderImgSchema = new Schema({
 	"headerId":Number,
@@ -23,11 +24,71 @@ var pwd_protectionSchema = new Schema({
 })
 
 var adminSchema = new Schema({
-	"userId":String,
-	"userName":String,
-	"userPwd":String,
-	"buyerPhone":Number,
-	"buyerEmail":String,
+	"id": {
+		type:'Number'
+	},
+	"name":{//昵称
+		type:String
+	},
+	"sex":{
+		type:Number,
+		default:3
+
+	},
+	"email":String,
+	"password":String,
+	"profile":{
+		type:String,//个人简介
+		default:'个人简介'
+	},
+	"telephone":String,
+	"avatar":{
+		type:String,
+		default:'https://gw.alipayobjects.com/zos/rmsportal/jZUIxmJycoymBprLOUbT.png'
+	},
+	"status":Number,
+	'lastLoginIp': String,
+	'lastLoginTime':Number,
+	'creatorId': {
+		type:String,
+		default:'admins'
+	},
+	'createTime':Number ,
+	'role_id':{
+		type:Number,
+		default:1674521995181
+	},
+	'lang':  {
+		type:String,
+		default:'zh-CN'
+	},
+	'islive': {
+		type:Boolean,
+		default:false
+	},
+	"createdAt":{
+		type:Date,
+		default:new Date()
+	},
+	"updatedAt":{
+		type:Date,
+		default:new Date()
+	},
+	"deletedAt":{
+		type:Date,
+		default:null
+	},
+	"grids": {
+		type:Array,
+		default:grids
+	},
+	//权限列表
+	"permissions":{
+		type:Array,
+	},
+	"menuList":{
+		type:Array
+	},
 	children:[HeaderImgSchema],
 	child:HeaderImgSchema,
 	pwd_protection:[pwd_protectionSchema]

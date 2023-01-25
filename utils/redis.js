@@ -27,6 +27,7 @@ class Redis{
             EX: time,
             NX: true
         }) : await this.client.set(key, value)
+
     }
     //获取数据
     async get(key) {

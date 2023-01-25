@@ -1,27 +1,25 @@
 var mongoose = require('mongoose')
 var Schema = mongoose.Schema
+var grids = require('../models/grids');
 var userSchema = new Schema({
 	"id": {
-		type:'Number',
-		default:1
+		type:'Number'
 	},
 	"name":{//昵称
-		type:String,
-		default:'test'
+		type:String
 	},
-	"username":String,
 	"email":String,
 	"password":String,
 	"profile":{
 		type:String,//个人简介
 		default:'个人简介'
 	},
+	"telephone":String,
 	"avatar":{
 		type:String,
 		default:'https://gw.alipayobjects.com/zos/rmsportal/jZUIxmJycoymBprLOUbT.png'
 	},
 	"status":Number,
-	"telephone":String,
 	'lastLoginIp': String,
 	'lastLoginTime':Number,
 	'creatorId': {
@@ -33,18 +31,35 @@ var userSchema = new Schema({
 		type:'Number',
 		default:0
 	},
-	'roleId': String,
+	'role_id': Number,
 	'lang':  {
 		type:String,
 		default:'zh-CN'
 	},
-	'token': {
-		type:String,
-		default:'4291d7da9005377ec9aec4a71ea837f'
-	},
 	'islive': {
 		type:Boolean,
 		default:false
+	},
+	"createdAt":{
+		type:Date,
+		default:new Date()
+	},
+	"updatedAt":{
+		type:Date
+	},
+	"deletedAt":{
+		type:Date
+	},
+	"grids": {
+		type:Array,
+		default:grids
+	},
+	//权限列表
+	"permissions":{
+		type:Array,
+	},
+	"menuList":{
+		type:Array
 	}
 })
 module.exports = mongoose.model('Users',userSchema)
