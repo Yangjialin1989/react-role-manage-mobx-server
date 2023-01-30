@@ -44,7 +44,7 @@ var adminSchema = new Schema({
 	"telephone":String,
 	"avatar":{
 		type:String,
-		default:'https://gw.alipayobjects.com/zos/rmsportal/jZUIxmJycoymBprLOUbT.png'
+		default:'static/image1.jpeg'
 	},
 	"status":Number,
 	'lastLoginIp': String,
@@ -56,8 +56,9 @@ var adminSchema = new Schema({
 	'createTime':Number ,
 	'role_id':{
 		type:Number,
-		default:1674521995181
+		default:1674995578276
 	},
+	'roleName':String,
 	'lang':  {
 		type:String,
 		default:'zh-CN'

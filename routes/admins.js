@@ -14,6 +14,10 @@ const GraceInfos = require("../models/graceInfos");
 const secretKEY =  'lsjifjd23ds0' //秘钥
 const {expressjwt} = require('express-jwt')
 var {setToken,verToken} = require('../utils/token')
+const Images = require("../models/images");
+const fs = require("fs");
+const multer = require("multer");
+var path = require('path');
 
 
 //获取数据
@@ -333,6 +337,31 @@ router.post('/login',async (req,res,next)=> {
         }]
     },{
             menuId: 4,
+            menuName: '权限管理',
+            menuUrl: 'index/permission',
+            pathRoute: 'permission',
+            componentPath: 'permission/PermissionManger',
+            menuImgClass: 'SolutionOutlined',
+            pId: 0,
+            menuState: '0',
+            isContainChildren: false,
+            menuChilds: [{
+                menuId:10,
+                menuName: '权限列表',
+                menuUrl: 'permission/permissionlist',
+                pathRoute: 'permissionlist',
+                componentPath: 'permission/PermissionList',
+                menuImgClass: 'InsertRowAboveOutlined',
+                pId: 2,
+                menuState: '0',
+                isContainChildren: false,
+                meta:{
+                    superAdmin:true
+                },
+                menuChilds: []
+            }]
+        },{
+            menuId: 5,
             menuName: '管理员管理',
             menuUrl: 'index/admin',
             pathRoute: 'admin',
@@ -342,7 +371,7 @@ router.post('/login',async (req,res,next)=> {
             menuState: '0',
             isContainChildren: false,
             menuChilds: [{
-                menuId:10,
+                menuId:11,
                 menuName: '管理员列表',
                 menuUrl: 'admin/adminlist',
                 pathRoute: 'adminlist',
@@ -356,35 +385,71 @@ router.post('/login',async (req,res,next)=> {
                 },
                 menuChilds: []
             }]
-        },
+        }
 
     ]
 
 
-    var admins = await Admins.findOne(param);
-    if (!admins) {
-        return res.json({
-            code: 100,
-            msg: '用户不存在，请注册或重新核对信息。',
-            token: null,
-            remember: false
-        })
-    }
-    return res.send({
-        code: 200,
-        msg: '登录成功',
-        token,
-        refresh_token,
-        remember: true,
-        data: {
-            userInfo,
-            menuInfo,
-            permissionInfo
+    Admins.findOne(param,function(err,doc){
+        if(doc !==null){
+            console.log(doc)
+            res.send({
+                code: 200,
+                msg: '登录成功',
+                token,
+                refresh_token,
+                remember: true,
+                data: {
+                    userInfo:{
+                        id:doc.id,
+                        lang:doc.lang,
+                        sex:doc.sex,
+                        profile:doc.profile,
+                        email:doc.email,
+                        name:doc.name,
+                        avatar:doc.avatar,
+                        roleName:doc.roleName
+                    },
+                   // menuInfo,
+                    menuInfo:doc.menuList,
+                    //permissionInfo
+                }
+            })
+        }else{
+                res.json({
+                    code: 100,
+                    msg: '用户不存在，请注册或重新核对信息。',
+                    token: null,
+                    remember: false
+                })
         }
     })
+
+
+    // var admins = await Admins.findOne(param);
+    // if (!admins) {
+    //     return res.json({
+    //         code: 100,
+    //         msg: '用户不存在，请注册或重新核对信息。',
+    //         token: null,
+    //         remember: false
+    //     })
+    // }
+    // return res.send({
+    //     code: 200,
+    //     msg: '登录成功',
+    //     token,
+    //     refresh_token,
+    //     remember: true,
+    //     data: {
+    //         userInfo,
+    //         menuInfo,
+    //         permissionInfo
+    //     }
+    // })
 })
 //2.注册
-router.post('/adminregister',function(req,res,next){
+router.post('/register',function(req,res,next){
     console.log(req.body)
     const admins = req.body
     const admin = new Admins(admins)
@@ -405,7 +470,7 @@ router.post('/adminregister',function(req,res,next){
 
 })
 //3.获取数据
-router.post('/adminlist',function(req,res,next){
+router.post('/list',function(req,res,next){
     //console.log('userlist',req.headers.authorization)
     console.log(req.body)
         //,{id:1,name:1,email0000:1,telephone:1}
@@ -430,12 +495,12 @@ router.post('/adminlist',function(req,res,next){
 
 })
 //4.搜索
-router.post('/adminsearch', function(req, res, next) {
+router.post('/search', function(req, res, next) {
     console.log(req.body)
 
     if(req.body.name === ''){
 
-        Admins.find({},{id:1,name:1,email:1,telephone:1,_id:0},function(err,doc){
+        Admins.find({},{id:1,name:1,password:1,profile:1,avatar:1,sex:1,role_id:1,roleName:1,email:1,telephone:1,_id:0},function(err,doc){
             if(!doc){
                 res.json({
                     code:300,
@@ -454,7 +519,7 @@ router.post('/adminsearch', function(req, res, next) {
         })
     }else{
         let param = req.body
-        Admins.findOne(param,{id:1,name:1,email:1,telephone:1,_id:0},function(err,doc){
+        Admins.findOne(param,{id:1,name:1,password:1,profile:1,avatar:1,sex:1,role_id:1,roleName:1,email:1,telephone:1,_id:0},function(err,doc){
             if(!doc){
                 res.json({
                     code:300,
@@ -476,7 +541,7 @@ router.post('/adminsearch', function(req, res, next) {
 });
 
 //5.删除
-router.post('/admindelete',function(req,res,next){
+router.post('/delete',function(req,res,next){
     let param = {id:req.body.id};
     console.log(req.body)
     console.log(param)
@@ -509,17 +574,14 @@ router.post('/admindelete',function(req,res,next){
 
 })
 //6.更新编辑
-router.post('/adminupdate',function(req,res,next){
+router.post('/update',function(req,res,next){
     let param = {id:req.body.id};
     let data = req.body
     let param1 = {name:req.body.name}
-
-
-
-
             Admins.findOne(param,function(err,doc){
                 if(doc){
                     Admins.update(param,data).then((result)=>{
+
                         res.json({
                             status:700,
                             msg:"原数据更新成功！",
@@ -540,19 +602,21 @@ router.post('/adminupdate',function(req,res,next){
 
 })
 //7.管理员名称验证
-router.post('/adminvalid', function(req, res, next) {
+router.post('/valid', function(req, res, next) {
     let param = {
         name:req.body.name
     }
-    //console.log(param)
+    console.log(param)
     Users.findOne(param,function(err,doc){
-        if(!doc){
+        console.log(doc)
+        if(doc===null){
             res.json({
                 code:300,
                 msg:'该名称可以注册!'
             })
         }
         if(doc){
+            console.log(doc)
             res.json({
                 code:102,
                 msg:'该名称已存在,请更换!'
@@ -560,6 +624,112 @@ router.post('/adminvalid', function(req, res, next) {
         }
     })
 });
+//8.上传头像、修改头像
+///////////////图片上传//////////////////////////////////////
+// 创建存放头像图片的目录(当头像目录不存在时)
+fs.readdir(__dirname + "/images/", function (err, files) {
+    if (err) {
+        fs.mkdir(__dirname + "/images/", function (err) {
+            if (err) {
+                console.log(err)
+            }
+            console.log("目录创建成功。");
+        })
+    }
+})
+// 设置图片存储路径
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        //cb(null,path.join(__dirname ,'../public/images/'))// ../uploads是将存放图片文件夹创建在node项目平级，./uploads会存放在node项目根目录下，需要提前建好文件夹，否则会报错
+        cb(null,'public/images')// ../uploads是将存放图片文件夹创建在node项目平级，./uploads会存放在node项目根目录下，需要提前建好文件夹，否则会报错
+    },
+    filename: function (req, file, cb) {
+        cb(null, `${Date.now()}-${file.originalname}`) // 文件名
+    }
+})
+//文件上传限制
+const limits = {
+    fields: 10,//非文件字段的数量
+    fileSize: 20000 * 1024,//文件大小 单位 b
+    files: 10//文件数量
+}
+// 添加配置文件到muler对象。
+var upload = multer({ storage: storage });
+//获取数据
+router.post('/avatar',upload.single('avatar'),async (ctx,res)=>{
+    // 当前接口允许跨域
+    //console.log(ctx.body)
+    //console.log(ctx.headers)
+    let {filledname,originalname,encoding,mimetype,distination,filename,path,size} = ctx.file;
+    const images = ctx.file
+    console.log(images)
+    let url = ctx.file.destination.replace(/public/,'static')
+    let avatar = `${url}/${ctx.file.filename}`
+    let param = {_id:ctx.headers.id};
+    console.log(param)
+    let data = {'avatar':avatar};
+    Admins.findOne(param,function(err,doc){
+
+                console.log(doc.avatar)
+               let deleteUrl = doc.avatar.replace(/static/,'public');
+                fs.unlink( deleteUrl,(err)=>{
+                    if(err) throw err;
+                    console.log('文件已删除')
+                })
+
+       // console.log(doc)
+        if(doc){
+            Admins.update(param, {avatar:avatar},{new:true}).then((result)=>{
+                //console.log(result)
+                res.json({
+                    status:700,
+                    msg:"原数据更新成功！",
+                    //res:doc
+                })
+            })
+        }else{
+            res.json({
+                status:107,
+                msg:'失败。'
+            })
+        }
+    })
+});
+//refresh_token
+router.post('/refreshtoken',async function(req,res,next){
+    var reftoken = req.headers['authorization']
+    console.log('ref',reftoken)
+    if (reftoken === undefined) {
+        return next()
+    } else {
+
+        verToken(reftoken).then(async (data) => {
+            console.log('refreshtoken :', data)
+            const payload = 'sjwoeodlf sldfjsldjfsd'
+            const exp = 120;
+            const token = await setToken(payload, exp)
+            res.cookie('exp',data.exp)
+            res.json({
+                code: 200,
+                token
+            })
+            next()
+        }).catch(error => {
+            // console.log(error)
+            // res.json({
+            //     code:100,
+            //     msg:'refresh_token过期了'
+            // })
+            next()
+
+        })
+
+    }
+})
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 

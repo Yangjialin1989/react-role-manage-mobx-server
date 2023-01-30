@@ -19,7 +19,8 @@ var rolesSchema = new Schema({
 	},
 	"roleName":String,
 
-	"permissionList":Array
+	"permissionList":Array,
+	"menuInfo":Array
 
 
 

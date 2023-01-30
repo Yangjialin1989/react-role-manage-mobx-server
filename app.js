@@ -23,6 +23,8 @@ var infosRouter = require('./routes/infos');
 var captchaRouter = require('./routes/captcha');
 var gridsRouter = require('./routes/grids');
 var socketsRouter = require('./routes/sockets');
+var rolesRouter = require('./routes/roles');
+var permissionsRouter = require('./routes/permissions');
 var app = express();
 app.use('/static',express.static(path.join(__dirname, 'public')));
 
@@ -64,6 +66,8 @@ app.use('/infos',infosRouter);
 app.use('/admins',adminsRouter);
 app.use('/grids',gridsRouter);
 app.use('/unauth/sockets',socketsRouter);
+app.use('/roles',rolesRouter);
+app.use('/permissions',permissionsRouter);
 
 //验证码
 app.use('/captcha',captchaRouter);
